@@ -1,0 +1,1769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🍔 Case Opening Simulator 🍔</title>
+    <link rel="icon" type="image/x-icon" href="https://math.hws.edu/favicon.ico ">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400   ;600;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --common: #b0c3d9;
+            --uncommon: #5e98d9;
+            --rare: #4b69ff;
+            --epic: #8847ff;
+            --legendary: #d32ce6;
+            --mythic: #eb4b4b;
+            --divine: #ffd700;
+            --godly: #1589FF;
+            --bg-dark: #0a0a0f;
+            --bg-card: #151520;
+            --accent: #ff6b35;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--accent);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.3);
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--accent), #ff9f43);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .balance-display {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1.2rem;
+            border: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .nav-btn {
+            background: transparent;
+            border: 2px solid transparent;
+            color: #fff;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .nav-btn:hover, .nav-btn.active {
+            border-color: var(--accent);
+            background: rgba(255, 107, 53, 0.2);
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Case Grid */
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(90deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .cases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .case-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .case-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent);
+            box-shadow: 0 10px 40px rgba(255, 107, 53, 0.3);
+        }
+        
+        .case-image {
+            height: 180px;
+            background: linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .case-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+        }
+        
+        .case-card:hover .case-image::before {
+            left: 100%;
+        }
+        
+        .case-info {
+            padding: 1.5rem;
+        }
+        
+        .case-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .case-price {
+            color: var(--accent);
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .case-price.free {
+            color: #22c55e;
+        }
+        
+        .case-odds {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }
+        
+        /* Case Opening Animation */
+        .opening-section {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(255, 107, 53, 0.3);
+        }
+        
+        .opening-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .roulette-container {
+            position: relative;
+            height: 200px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 2rem 0;
+            border: 3px solid var(--accent);
+        }
+        
+        .roulette-window {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--accent);
+            transform: translateX(-50%);
+            z-index: 10;
+            box-shadow: 0 0 20px var(--accent);
+        }
+        
+        .roulette-items {
+            display: flex;
+            height: 100%;
+            align-items: center;
+            position: absolute;
+            left: 50%;
+            transition: none;
+            transform: translateX(0px);
+        }
+        
+        .roulette-item {
+            min-width: 150px;
+            height: 150px;
+            margin: 0 10px;
+            background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            border: 3px solid;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .roulette-item::after {
+            content: attr(data-rarity);
+            position: absolute;
+            bottom: 5px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .opening-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        
+        .open-btn {
+            background: linear-gradient(135deg, var(--accent), #ff9f43);
+            border: none;
+            color: #fff;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .open-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(255, 107, 53, 0.6);
+        }
+        
+        .open-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .back-btn {
+            background: transparent;
+            border: 2px solid #666;
+            color: #fff;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .back-btn:hover {
+            border-color: #fff;
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Inventory */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+        
+        .inventory-item {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+            border: 2px solid;
+            transition: all 0.3s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .inventory-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .inventory-item .item-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .inventory-item .item-name {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .inventory-item .item-value {
+            color: var(--accent);
+            font-weight: 700;
+        }
+        
+        .sell-btn {
+            background: #22c55e;
+            border: none;
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            width: 100%;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .sell-btn:hover {
+            background: #16a34a;
+            transform: scale(1.05);
+        }
+        
+        /* Jackpot */
+        .jackpot-section {
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid var(--legendary);
+        }
+        
+        .jackpot-section.active {
+            display: block;
+        }
+        
+        .jackpot-wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 2rem auto;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 8px solid var(--legendary);
+            box-shadow: 0 0 50px rgba(211, 44, 230, 0.5);
+            transition: transform 5s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .wheel-segment {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: 100% 100%;
+            left: 0;
+            top: 0;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: #1a1a2e;
+            border-radius: 50%;
+            border: 4px solid var(--legendary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            z-index: 10;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        .wheel-pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid var(--accent);
+            z-index: 20;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+        }
+        
+        .jackpot-players {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+        
+        .jackpot-player {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            min-width: 200px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .jackpot-player.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.4);
+        }
+        
+        .jackpot-controls {
+            text-align: center;
+        }
+        
+        .spin-jackpot-btn {
+            background: linear-gradient(135deg, var(--legendary), #d32ce6);
+            border: none;
+            color: #fff;
+            padding: 1rem 3rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(211, 44, 230, 0.4);
+            margin-top: 1rem;
+        }
+        
+        .spin-jackpot-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(211, 44, 230, 0.6);
+        }
+        
+        .spin-jackpot-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* Coinflip */
+        .coinflip-section {
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e 0%, #1e3a5f 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 2px solid var(--rare);
+        }
+        
+        .coinflip-section.active {
+            display: block;
+        }
+        
+        .coin {
+            width: 200px;
+            height: 200px;
+            margin: 2rem auto;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 3s ease-out;
+            transform: rotateY(0deg);
+        }
+        
+        .coin-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 900;
+            border: 8px solid;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+        
+        .coin-heads {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333;
+            border-color: #b8860b;
+        }
+        
+        .coin-tails {
+            background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+            color: #333;
+            border-color: #808080;
+            transform: rotateY(180deg);
+        }
+        
+        .coinflip-controls {
+            text-align: center;
+            margin-top: 2rem;
+        }
+        
+        .bet-amount {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid var(--rare);
+            color: #fff;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            width: 200px;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .side-selector {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .side-btn {
+            padding: 1rem 2rem;
+            border: 3px solid;
+            background: transparent;
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .side-btn.heads {
+            border-color: #ffd700;
+            color: #ffd700;
+        }
+        
+        .side-btn.heads:hover, .side-btn.heads.selected {
+            background: #ffd700;
+            color: #333;
+        }
+        
+        .side-btn.tails {
+            border-color: #c0c0c0;
+            color: #c0c0c0;
+        }
+        
+        .side-btn.tails:hover, .side-btn.tails.selected {
+            background: #c0c0c0;
+            color: #333;
+        }
+        
+        /* Codes Section */
+        .codes-section {
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            border: 2px solid var(--accent);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .codes-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .code-input-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .code-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--accent);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            width: 300px;
+            text-align: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .code-input:focus {
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+            border-color: #ff9f43;
+        }
+        
+        .code-input::placeholder {
+            text-transform: none;
+            color: #666;
+        }
+        
+        .enter-btn {
+            background: linear-gradient(135deg, var(--accent), #ff9f43);
+            border: none;
+            color: #fff;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
+        
+        .enter-btn:hover:not(:disabled) {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(255, 107, 53, 0.6);
+        }
+        
+        .enter-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .code-message {
+            margin-top: 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            min-height: 1.5rem;
+        }
+        
+        .code-message.success {
+            color: #22c55e;
+        }
+        
+        .code-message.error {
+            color: #ef4444;
+        }
+        
+        /* Admin Section */
+        .admin-section {
+            display: none;
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 100%);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            border: 2px solid var(--legendary);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .admin-section.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        .admin-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--legendary);
+            font-weight: 900;
+        }
+        
+        .admin-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .admin-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--legendary);
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            width: 250px;
+            text-align: center;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .admin-input:focus {
+            box-shadow: 0 0 20px rgba(211, 44, 230, 0.5);
+        }
+        
+        .reset-money-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            color: #fff;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .reset-money-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 30px rgba(239, 68, 68, 0.6);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            border: 3px solid;
+            transform: scale(0.8);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .modal-overlay.active .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-content::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            animation: shine 2s infinite;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+        
+        .modal-icon {
+            font-size: 6rem;
+            margin-bottom: 1rem;
+            animation: bounce 1s infinite;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .modal-title {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .modal-item {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .modal-value {
+            font-size: 1.2rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .modal-close {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .modal-close:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.5);
+        }
+        
+        /* Rarity Colors */
+        .rarity-common { border-color: var(--common); color: var(--common); }
+        .rarity-uncommon { border-color: var(--uncommon); color: var(--uncommon); }
+        .rarity-rare { border-color: var(--rare); color: var(--rare); }
+        .rarity-epic { border-color: var(--epic); color: var(--epic); }
+        .rarity-legendary { border-color: var(--legendary); color: var(--legendary); }
+        .rarity-mythic { border-color: var(--mythic); color: var(--mythic); }
+        .rarity-divine { border-color: var(--divine); color: var(--divine); }
+        .rarity-godly { border-color: var(--godly); color: var(--godly); }
+        
+        .rarity-common::after { color: var(--common); }
+        .rarity-uncommon::after { color: var(--uncommon); }
+        .rarity-rare::after { color: var(--rare); }
+        .rarity-epic::after { color: var(--epic); }
+        .rarity-legendary::after { color: var(--legendary); }
+        .rarity-mythic::after { color: var(--mythic); }
+        .rarity-divine::after { color: var(--divine); }
+        .rarity-godly::after { color: var(--godly); }
+        
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            background: var(--bg-card);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #888;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            pointer-events: none;
+            animation: confetti-fall 3s linear forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cases-grid { grid-template-columns: 1fr; }
+            .jackpot-wheel-container { width: 300px; height: 300px; }
+            .nav-tabs { flex-wrap: wrap; gap: 0.5rem; }
+            .nav-btn { padding: 0.4rem 1rem; font-size: 0.9rem; }
+            .opening-buttons { flex-direction: column; align-items: center; }
+            .code-input { width: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">🍔 FoodCases</div>
+        <nav class="nav-tabs" id="nav-tabs">
+            <button class="nav-btn" id="admin-btn" onclick="showSection('admin')" style="display: none;">Admin</button>
+            <button class="nav-btn active" onclick="showSection('cases')">Cases</button>
+            <button class="nav-btn" onclick="showSection('jackpot')">Jackpot</button>
+            <button class="nav-btn" onclick="showSection('coinflip')">Coinflip</button>
+            <button class="nav-btn" onclick="showSection('inventory')">Inventory</button>
+            <button class="nav-btn" onclick="showSection('codes')">Codes</button>
+        </nav>
+        <div class="balance-display">
+            <span>💰</span>
+            <span id="balance">200</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Cases Section -->
+        <div id="cases-section" class="section">
+            <h2 class="section-title">Choose a Case to Open</h2>
+            <div class="stats-bar">
+                <div class="stat-box">
+                    <div class="stat-value" id="total-opened">0</div>
+                    <div class="stat-label">Cases Opened</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="best-item">-</div>
+                    <div class="stat-label">Best Item</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="inventory-count">0</div>
+                    <div class="stat-label">Items Owned</div>
+                </div>
+            </div>
+            <div class="cases-grid" id="cases-grid"></div>
+            
+            <div class="opening-section" id="opening-section">
+                <h3 style="text-align: center; margin-bottom: 1rem;" id="opening-case-name">Opening Case...</h3>
+                <div class="roulette-container">
+                    <div class="roulette-window"></div>
+                    <div class="roulette-items" id="roulette-items"></div>
+                </div>
+                <div class="opening-buttons">
+                    <button class="open-btn" id="spin-btn" onclick="startSpin()">SPIN ($<span id="spin-price">0</span>)</button>
+                    <button class="back-btn" onclick="exitCase()">BACK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Section -->
+        <div id="admin-section" class="admin-section section">
+            <h2 class="admin-title">⚡ Admin Panel ⚡</h2>
+            <div class="admin-controls">
+                <div style="font-size: 1.1rem; margin-bottom: 1rem;">Set Money Amount</div>
+                <input type="number" class="admin-input" id="admin-money-input" placeholder="Enter amount">
+                <button class="open-btn" onclick="setMoney()">SET MONEY</button>
+                <button class="reset-money-btn" onclick="resetMoney()">RESET MONEY TO $200</button>
+            </div>
+        </div>
+
+        <!-- Jackpot Section -->
+        <div id="jackpot-section" class="jackpot-section section">
+            <h2 class="section-title">🎰 Jackpot</h2>
+            <div class="jackpot-players">
+                <div class="jackpot-player active" id="player1">
+                    <div style="font-size: 2rem;">👤</div>
+                    <div style="font-weight: 700; margin: 0.5rem 0;">You</div>
+                    <div style="color: var(--accent); font-weight: 700;">$<span id="jp-player1">0</span></div>
+                    <div style="font-size: 0.9rem; color: #888; margin-top: 0.5rem;" id="p1-chance">0% chance</div>
+                </div>
+                <div style="font-size: 2rem; font-weight: 900; color: var(--accent);">VS</div>
+                <div class="jackpot-player" id="player2">
+                    <div style="font-size: 2rem;">🤖</div>
+                    <div style="font-weight: 700; margin: 0.5rem 0;">Bot</div>
+                    <div style="color: var(--accent); font-weight: 700;">$<span id="jp-player2">0</span></div>
+                    <div style="font-size: 0.9rem; color: #888; margin-top: 0.5rem;" id="p2-chance">0% chance</div>
+                </div>
+            </div>
+            <div class="jackpot-wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="jackpot-wheel"></div>
+                <div class="wheel-center">VS</div>
+            </div>
+            <div class="jackpot-controls">
+                <input type="number" class="bet-amount" id="jp-bet" placeholder="Bet Amount" min="10" value="100">
+                <br>
+                <button class="open-btn" onclick="joinJackpot()" id="join-jp-btn">JOIN JACKPOT</button>
+                <br>
+                <button class="spin-jackpot-btn" onclick="spinJackpot()" id="spin-jp-btn" disabled>SPIN WHEEL</button>
+            </div>
+            <div style="text-align: center; margin-top: 1rem; color: #888;">
+                Join the jackpot, then spin the wheel to determine the winner!
+            </div>
+        </div>
+
+        <!-- Coinflip Section -->
+        <div id="coinflip-section" class="coinflip-section section">
+            <h2 class="section-title">🪙 Coinflip</h2>
+            <div class="coin" id="coin">
+                <div class="coin-face coin-heads">HEADS</div>
+                <div class="coin-face coin-tails">TAILS</div>
+            </div>
+            <div class="coinflip-controls">
+                <input type="number" class="bet-amount" id="cf-bet" placeholder="Bet Amount" min="10" value="50">
+                <div class="side-selector">
+                    <button class="side-btn heads" onclick="selectSide('heads')">HEADS</button>
+                    <button class="side-btn tails" onclick="selectSide('tails')">TAILS</button>
+                </div>
+                <button class="open-btn" onclick="flipCoin()">FLIP COIN</button>
+            </div>
+            <div style="text-align: center; margin-top: 1rem; color: #888;">
+                50/50 chance - Double your money!
+            </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory-section" class="section" style="display: none;">
+            <h2 class="section-title">Your Inventory</h2>
+            <div id="inventory-container">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📦</div>
+                    <div>Your inventory is empty</div>
+                    <div style="font-size: 0.9rem; margin-top: 0.5rem;">Open some cases to get items!</div>
+                </div>
+            </div>
+            <div class="inventory-grid" id="inventory-grid" style="display: none;"></div>
+        </div>
+
+        <!-- Codes Section -->
+        <div id="codes-section" class="codes-section section">
+            <h2 class="section-title">🎟️ Redeem Codes</h2>
+            <p style="color: #888; margin-bottom: 1rem;">Enter a code to unlock special rewards!</p>
+            <div class="code-input-container">
+                <input type="text" 
+                       class="code-input" 
+                       id="code-input" 
+                       placeholder="ENTER CODE" 
+                       autocomplete="off" 
+                       autocapitalize="characters"
+                       oninput="this.value = this.value.toUpperCase()">
+                <button class="enter-btn" id="code-enter-btn" onclick="submitCode()">→</button>
+            </div>
+            <div class="code-message" id="code-message"></div>
+        </div>
+    </div>
+
+    <!-- Win Modal -->
+    <div class="modal-overlay" id="win-modal">
+        <div class="modal-content" id="modal-content">
+            <div class="modal-icon" id="modal-icon">🎉</div>
+            <h2 class="modal-title" id="modal-title">You Won!</h2>
+            <div class="modal-item" id="modal-item">Item Name</div>
+            <div class="modal-value" id="modal-value">$100</div>
+            <button class="modal-close" onclick="closeModal()">COLLECT</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Data - Reordered from worst to best
+        const foods = {
+            common: [
+                { name: "Stale Bread", icon: "🍞", value: 10 },
+                { name: "Raw Potato", icon: "🥔", value: 15 },
+                { name: "Plain Rice", icon: "🍚", value: 12 },
+                { name: "Tap Water", icon: "💧", value: 5 },
+                { name: "Lettuce Leaf", icon: "🥬", value: 8 }
+            ],
+            uncommon: [
+                { name: "Fresh Apple", icon: "🍎", value: 50 },
+                { name: "Banana", icon: "🍌", value: 45 },
+                { name: "Carrot", icon: "🥕", value: 40 },
+                { name: "Cheese Slice", icon: "🧀", value: 60 },
+                { name: "Cookie", icon: "🍪", value: 55 }
+            ],
+            rare: [
+                { name: "Burger", icon: "🍔", value: 200 },
+                { name: "Pizza Slice", icon: "🍕", value: 180 },
+                { name: "Taco", icon: "🌮", value: 220 },
+                { name: "Sushi Roll", icon: "🍣", value: 250 },
+                { name: "Fried Chicken", icon: "🍗", value: 190 }
+            ],
+            epic: [
+                { name: "Steak", icon: "🥩", value: 800 },
+                { name: "Lobster", icon: "🦞", value: 1000 },
+                { name: "Crab", icon: "🦀", value: 900 },
+                { name: "Oyster", icon: "🦪", value: 850 },
+                { name: "Caviar", icon: "🐟", value: 1200 }
+            ],
+            legendary: [
+                { name: "Golden Burger", icon: "👑🍔", value: 5000 },
+                { name: "Diamond Pizza", icon: "💎🍕", value: 4500 },
+                { name: "Magic Taco", icon: "🌮✨", value: 5500 },
+                { name: "Dragon Steak", icon: "🐉🥩", value: 6000 },
+                { name: "Royal Feast", icon: "🏰🍽️", value: 8000 }
+            ],
+            mythic: [
+                { name: "Cosmic Sushi", icon: "🌌🍣", value: 25000 },
+                { name: "Galaxy Burger", icon: "🌠🍔", value: 30000 },
+                { name: "Infinity Taco", icon: "∞🌮", value: 35000 },
+                { name: "Eternity Steak", icon: "⏳🥩", value: 40000 },
+                { name: "Godly Ramen", icon: "👼🍜", value: 50000 }
+            ],
+            divine: [
+                { name: "Universe Pizza", icon: "🌌🍕", value: 100000 },
+                { name: "Reality Burger", icon: "🌐🍔", value: 150000 },
+                { name: "Existence Taco", icon: "🔮🌮", value: 200000 },
+                { name: "Omnipotent Steak", icon: "⚡🥩", value: 300000 },
+                { name: "Infinity Wings", icon: "🍗💎", value: 500000 }
+            ],
+            godly: [
+                { name: "Godly Totem", icon: "🗿", value:1000000 }
+        };
+
+        // Cases ordered from worst to best (price ascending)
+        const cases = [
+            { name: "Starter Case", price: 0, icon: "📦", odds: "70% Common, 25% Uncommon, 5% Rare", chances: { common: 70, uncommon: 25, rare: 5 } },
+            { name: "Fast Food", price: 100, icon: "🍟", odds: "60% Common, 30% Uncommon, 10% Rare", chances: { common: 60, uncommon: 30, rare: 10 } },
+            { name: "Lunch Box", price: 250, icon: "🥡", odds: "60% Common, 30% Uncommon, 8% Rare, 2% Epic", chances: { common: 60, uncommon: 30, rare: 8, epic: 2 } },
+            { name: "Dinner Crate", price: 500, icon: "🍱", odds: "50% Uncommon, 35% Rare, 12% Epic, 3% Legendary", chances: { uncommon: 50, rare: 35, epic: 12, legendary: 3 } },
+            { name: "Mystery Meal", price: 750, icon: "❓", odds: "20% each tier up to Legendary, 4% Mythic, 1% Divine", chances: { common: 20, uncommon: 20, rare: 20, epic: 20, legendary: 15, mythic: 4, divine: 1 } },
+            { name: "Gourmet Box", price: 1000, icon: "🎁", odds: "50% Rare, 35% Epic, 12% Legendary, 3% Mythic", chances: { rare: 50, epic: 35, legendary: 12, mythic: 3 } },
+            { name: "Seafood Special", price: 1500, icon: "🦐", odds: "45% Rare, 30% Epic, 20% Legendary, 5% Mythic", chances: { rare: 45, epic: 30, legendary: 20, mythic: 5 } },
+            { name: "Dessert Box", price: 2000, icon: "🍰", odds: "45% Epic, 35% Legendary, 15% Mythic, 5% Divine", chances: { epic: 45, legendary: 35, mythic: 15, divine: 5 } },
+            { name: "Chef's Special", price: 2500, icon: "👨‍🍳", odds: "50% Epic, 35% Legendary, 12% Mythic, 3% Divine", chances: { epic: 50, legendary: 35, mythic: 12, divine: 3 } },
+            { name: "Godly Feast", price: 5000, icon: "☄️", odds: "60% Legendary, 30% Mythic, 9% Divine, 1% Godly", chances: { legendary: 60, mythic: 30, divine: 10 } }
+        ];
+
+        // Game State
+        let balance = 200;
+        let inventory = [];
+        let currentCase = null;
+        let isSpinning = false;
+        let totalOpened = 0;
+        let bestItemValue = 0;
+        let selectedCoinSide = null;
+        let jackpotState = {
+            player1Bet: 0,
+            player2Bet: 0,
+            joined: false,
+            spun: false
+        };
+        let isAdmin = false;
+        let lastCaseIndex = null; // Track last opened case
+
+        // Initialize
+        function init() {
+            loadData();
+            renderCases();
+            updateStats();
+            updateBalance();
+            checkAdminStatus();
+        }
+
+        function loadData() {
+            const savedBalance = localStorage.getItem('fc_balance');
+            const savedInventory = localStorage.getItem('fc_inventory');
+            const savedOpened = localStorage.getItem('fc_opened');
+            const savedBest = localStorage.getItem('fc_best');
+            const savedAdmin = localStorage.getItem('fc_admin');
+            
+            if (savedBalance !== null) balance = parseInt(savedBalance);
+            if (savedInventory !== null) inventory = JSON.parse(savedInventory);
+            if (savedOpened !== null) totalOpened = parseInt(savedOpened);
+            if (savedBest !== null) bestItemValue = parseInt(savedBest);
+            if (savedAdmin !== null) isAdmin = savedAdmin === 'true';
+        }
+
+        function saveData() {
+            localStorage.setItem('fc_balance', balance);
+            localStorage.setItem('fc_inventory', JSON.stringify(inventory));
+            localStorage.setItem('fc_opened', totalOpened);
+            localStorage.setItem('fc_best', bestItemValue);
+            localStorage.setItem('fc_admin', isAdmin);
+        }
+
+        function checkAdminStatus() {
+            if (isAdmin) {
+                document.getElementById('admin-btn').style.display = 'inline-block';
+            }
+        }
+
+        function renderCases() {
+            const grid = document.getElementById('cases-grid');
+            grid.innerHTML = cases.map((c, i) => `
+                <div class="case-card" onclick="selectCase(${i})">
+                    <div class="case-image">
+                        <div style="z-index: 1;">${c.icon}</div>
+                    </div>
+                    <div class="case-info">
+                        <div class="case-name">${c.name}</div>
+                        <div class="case-price ${c.price === 0 ? 'free' : ''}">${c.price === 0 ? 'FREE' : '$' + c.price}</div>
+                        <div class="case-odds">${c.odds}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCase(index) {
+            if (isSpinning) return;
+            currentCase = index;
+            lastCaseIndex = index;
+            const c = cases[index];
+            
+            document.getElementById('opening-case-name').textContent = `Opening ${c.name}...`;
+            document.getElementById('spin-price').textContent = c.price === 0 ? 'FREE' : c.price;
+            document.getElementById('opening-section').classList.add('active');
+            document.getElementById('cases-grid').style.display = 'none';
+            
+            generateRouletteItems(index);
+        }
+
+        function exitCase() {
+            if (isSpinning) return;
+            document.getElementById('opening-section').classList.remove('active');
+            document.getElementById('cases-grid').style.display = 'grid';
+            currentCase = null;
+        }
+
+        function generateRouletteItems(caseIndex) {
+            const container = document.getElementById('roulette-items');
+            container.innerHTML = '';
+            container.style.transition = 'none';
+            container.style.transform = 'translateX(0)';
+            
+            const items = [];
+            for (let i = 0; i < 50; i++) {
+                const item = generateItem(caseIndex);
+                const div = document.createElement('div');
+                div.className = `roulette-item rarity-${item.rarity}`;
+                div.innerHTML = `
+                    <div style="font-size: 2.5rem;">${item.icon}</div>
+                    <div style="font-size: 0.7rem; font-weight: 600;">${item.name}</div>
+                `;
+                div.setAttribute('data-rarity', item.rarity);
+                container.appendChild(div);
+                items.push(item);
+            }
+            
+            container.items = items;
+        }
+
+        function generateItem(caseIndex) {
+            const chances = cases[caseIndex].chances;
+            const rand = Math.random() * 100;
+            let cumulative = 0;
+            let selectedRarity = 'common';
+            
+            // Define rarity order from worst to best
+            const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'divine', 'godly'];
+            
+            for (const rarity of rarityOrder) {
+                if (chances[rarity]) {
+                    cumulative += chances[rarity];
+                    if (rand <= cumulative) {
+                        selectedRarity = rarity;
+                        break;
+                    }
+                }
+            }
+            
+            const rarityItems = foods[selectedRarity];
+            const item = rarityItems[Math.floor(Math.random() * rarityItems.length)];
+            return { ...item, rarity: selectedRarity };
+        }
+
+        function startSpin() {
+            if (isSpinning || currentCase === null) return;
+            const c = cases[currentCase];
+            const price = c.price;
+            
+            if (balance < price) {
+                alert("Not enough balance!");
+                return;
+            }
+            
+            balance -= price;
+            updateBalance();
+            saveData();
+            
+            isSpinning = true;
+            document.getElementById('spin-btn').disabled = true;
+            
+            const container = document.getElementById('roulette-items');
+            const itemWidth = 170;
+            
+            // FIX #1: Generate roulette items fresh before spin if re-spinning same case
+            // This ensures clean state
+            generateRouletteItems(currentCase);
+            
+            // Determine winning item before animation
+            const winningIndex = 45;
+            const winningItem = generateItem(currentCase);
+            
+            // Replace the item at winning index with the actual winning item
+            container.items[winningIndex] = winningItem;
+            
+            // Update the DOM element at winning index
+            const winningDiv = container.children[winningIndex];
+            winningDiv.className = `roulette-item rarity-${winningItem.rarity}`;
+            winningDiv.innerHTML = `
+                <div style="font-size: 2.5rem;">${winningItem.icon}</div>
+                <div style="font-size: 0.7rem; font-weight: 600;">${winningItem.name}</div>
+            `;
+            winningDiv.setAttribute('data-rarity', winningItem.rarity);
+            
+            // Calculate offset to center the winning item
+            const offset = (winningIndex * itemWidth) - (container.parentElement.offsetWidth / 2) + (itemWidth / 2);
+            
+            // Force reflow to ensure transition applies
+            container.offsetHeight; // trigger reflow
+            
+            container.style.transition = 'transform 4s cubic-bezier(0.23, 1, 0.32, 1)';
+            container.style.transform = `translateX(-${offset}px)`;
+            
+            setTimeout(() => {
+                showWinModal(winningItem);
+                addToInventory(winningItem);
+                totalOpened++;
+                if (winningItem.value > bestItemValue) bestItemValue = winningItem.value;
+                updateStats();
+                saveData();
+                
+                isSpinning = false;
+                document.getElementById('spin-btn').disabled = false;
+            }, 4000);
+        }
+
+        function showWinModal(item) {
+            const modal = document.getElementById('win-modal');
+            const content = document.getElementById('modal-content');
+            const rarityColors = {
+                common: '#b0c3d9', uncommon: '#5e98d9', rare: '#4b69ff', epic: '#8847ff',
+                legendary: '#d32ce6', mythic: '#eb4b4b', divine: '#ffd700', godly:'04d9ff'
+            };
+            
+            content.style.borderColor = rarityColors[item.rarity];
+            content.className = `modal-content rarity-${item.rarity}`;
+            document.getElementById('modal-icon').textContent = item.icon;
+            document.getElementById('modal-item').textContent = item.name;
+            document.getElementById('modal-item').style.color = rarityColors[item.rarity];
+            document.getElementById('modal-value').textContent = `$${item.value.toLocaleString()} (${item.rarity.toUpperCase()})`;
+            
+            modal.classList.add('active');
+            
+            if (['legendary', 'mythic', 'divine', 'godly'].includes(item.rarity)) {
+                createConfetti();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('win-modal').classList.remove('active');
+        }
+
+        function addToInventory(item) {
+            inventory.push({ ...item, id: Date.now(), acquired: new Date().toISOString() });
+            saveData();
+        }
+
+        function updateInventory() {
+            const container = document.getElementById('inventory-container');
+            const grid = document.getElementById('inventory-grid');
+            
+            if (inventory.length === 0) {
+                container.style.display = 'block';
+                grid.style.display = 'none';
+            } else {
+                container.style.display = 'none';
+                grid.style.display = 'grid';
+                // Sort by value descending
+                const sorted = [...inventory].sort((a, b) => b.value - a.value);
+                grid.innerHTML = sorted.map((item, index) => `
+                    <div class="inventory-item rarity-${item.rarity}">
+                        <div class="item-icon">${item.icon}</div>
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-value">$${item.value.toLocaleString()}</div>
+                        <button class="sell-btn" onclick="sellItem(${inventory.indexOf(item)})">SELL</button>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('inventory-count').textContent = inventory.length;
+        }
+
+        function sellItem(index) {
+            const item = inventory[index];
+            balance += item.value;
+            inventory.splice(index, 1);
+            updateBalance();
+            updateInventory();
+            updateStats();
+            saveData();
+        }
+
+        // Jackpot
+        function joinJackpot() {
+            if (jackpotState.joined) {
+                alert("You've already joined! Click SPIN WHEEL to spin.");
+                return;
+            }
+            
+            const bet = parseInt(document.getElementById('jp-bet').value);
+            if (isNaN(bet) || bet < 10 || bet > balance) {
+                alert("Invalid bet amount! Minimum is $10.");
+                return;
+            }
+            
+            balance -= bet;
+            updateBalance();
+            saveData();
+            
+            jackpotState.player1Bet = bet;
+            jackpotState.player2Bet = Math.floor(bet * (0.8 + Math.random() * 0.4));
+            jackpotState.joined = true;
+            
+            document.getElementById('jp-player1').textContent = bet;
+            document.getElementById('jp-player2').textContent = jackpotState.player2Bet;
+            
+            const total = bet + jackpotState.player2Bet;
+            const p1Chance = (bet / total) * 100;
+            document.getElementById('p1-chance').textContent = `${p1Chance.toFixed(1)}% chance`;
+            document.getElementById('p2-chance').textContent = `${(100-p1Chance).toFixed(1)}% chance`;
+            
+            // Create wheel
+            const wheel = document.getElementById('jackpot-wheel');
+            wheel.innerHTML = '';
+            wheel.style.transform = 'rotate(0deg)';
+            const segments = 12;
+            const p1Segments = Math.round(segments * p1Chance / 100);
+            
+            for (let i = 0; i < segments; i++) {
+                const seg = document.createElement('div');
+                seg.className = 'wheel-segment';
+                seg.style.transform = `rotate(${(360 / segments) * i}deg)`;
+                seg.style.background = i < p1Segments ? '#ff6b35' : '#8847ff';
+                wheel.appendChild(seg);
+            }
+            
+            document.getElementById('join-jp-btn').disabled = true;
+            document.getElementById('spin-jp-btn').disabled = false;
+        }
+
+        function spinJackpot() {
+            if (!jackpotState.joined || jackpotState.spun) return;
+            
+            jackpotState.spun = true;
+            document.getElementById('spin-jp-btn').disabled = true;
+            
+            const wheel = document.getElementById('jackpot-wheel');
+            const p1Chance = parseFloat(document.getElementById('p1-chance').textContent);
+            
+            // Determine winner before animation
+            const player1Wins = Math.random() * 100 < p1Chance;
+            
+            // Calculate winning angle
+            const segments = 12;
+            const p1Segments = Math.round(segments * p1Chance / 100);
+            let winningSegment;
+            
+            if (player1Wins) {
+                winningSegment = Math.floor(Math.random() * p1Segments);
+            } else {
+                winningSegment = p1Segments + Math.floor(Math.random() * (segments - p1Segments));
+            }
+            
+            const segmentAngle = 360 / segments;
+            const winningAngle = (winningSegment * segmentAngle) + (Math.random() * segmentAngle);
+            
+            const rotations = 5 + Math.floor(Math.random() * 3);
+            const totalRotation = (rotations * 360) + (360 - winningAngle);
+            
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+            
+            setTimeout(() => {
+                const total = jackpotState.player1Bet + jackpotState.player2Bet;
+                
+                if (player1Wins) {
+                    balance += total;
+                    showWinModal({ name: "Jackpot Win!", icon: "🎰", value: total, rarity: "legendary" });
+                } else {
+                    showWinModal({ name: "Jackpot Loss", icon: "😢", value: 0, rarity: "common" });
+                }
+                
+                updateBalance();
+                saveData();
+                
+                // Reset jackpot
+                setTimeout(() => {
+                    resetJackpot();
+                }, 2000);
+            }, 5000);
+        }
+
+        function resetJackpot() {
+            jackpotState = { player1Bet: 0, player2Bet: 0, joined: false, spun: false };
+            document.getElementById('jp-player1').textContent = '0';
+            document.getElementById('jp-player2').textContent = '0';
+            document.getElementById('p1-chance').textContent = '0% chance';
+            document.getElementById('p2-chance').textContent = '0% chance';
+            document.getElementById('join-jp-btn').disabled = false;
+            document.getElementById('spin-jp-btn').disabled = true;
+            document.getElementById('jackpot-wheel').innerHTML = '';
+            document.getElementById('jackpot-wheel').style.transform = 'rotate(0deg)';
+        }
+
+        // Coinflip
+        function selectSide(side) {
+            selectedCoinSide = side;
+            document.querySelectorAll('.side-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelector(`.side-btn.${side}`).classList.add('selected');
+        }
+
+        function flipCoin() {
+            if (isSpinning || !selectedCoinSide) {
+                if (!selectedCoinSide) alert("Select a side first!");
+                return;
+            }
+            
+            const bet = parseInt(document.getElementById('cf-bet').value);
+            if (isNaN(bet) || bet < 10 || bet > balance) {
+                alert("Invalid bet amount! Minimum is $10.");
+                return;
+            }
+            
+            balance -= bet;
+            updateBalance();
+            saveData();
+            isSpinning = true;
+            
+            const coin = document.getElementById('coin');
+            const isHeads = Math.random() < 0.5;
+            const rotations = 5 + Math.floor(Math.random() * 3);
+            const finalRotation = isHeads ? 0 : 180;
+            const totalRotation = (rotations * 360) + finalRotation;
+            
+            coin.style.transform = `rotateY(${totalRotation}deg)`;
+            
+            setTimeout(() => {
+                const won = (isHeads && selectedCoinSide === 'heads') || (!isHeads && selectedCoinSide === 'tails');
+                if (won) {
+                    balance += bet * 2;
+                    showWinModal({ name: "Coinflip Win!", icon: isHeads ? "👑" : "🦅", value: bet * 2, rarity: "rare" });
+                } else {
+                    showWinModal({ name: "Coinflip Loss", icon: "💨", value: 0, rarity: "common" });
+                }
+                updateBalance();
+                saveData();
+                isSpinning = false;
+            }, 3000);
+        }
+
+        // Codes System
+        function submitCode() {
+            const input = document.getElementById('code-input');
+            const message = document.getElementById('code-message');
+            const code = input.value.trim();
+            
+            if (!code) {
+                message.textContent = "Please enter a code!";
+                message.className = "code-message error";
+                return;
+            }
+            
+            if (code === "67ADMIN67") {
+                if (isAdmin) {
+                    message.textContent = "You already have admin permissions!";
+                    message.className = "code-message success";
+                } else {
+                    isAdmin = true;
+                    saveData();
+                    document.getElementById('admin-btn').style.display = 'inline-block';
+                    message.textContent = "Admin Permissions granted";
+                    message.className = "code-message success";
+                    input.value = '';
+                }
+            } else {
+                message.textContent = "Invalid code!";
+                message.className = "code-message error";
+            }
+        }
+
+        // Admin Functions
+        function setMoney() {
+            const input = document.getElementById('admin-money-input');
+            const amount = parseInt(input.value);
+            
+            if (isNaN(amount) || amount < 0) {
+                alert("Please enter a valid amount!");
+                return;
+            }
+            
+            balance = amount;
+            updateBalance();
+            saveData();
+            alert(`Money set to $${amount.toLocaleString()}!`);
+            input.value = '';
+        }
+
+        function resetMoney() {
+            balance = 200;
+            updateBalance();
+            saveData();
+            alert("Money reset to $200!");
+        }
+
+        // Navigation
+        function showSection(section) {
+            // Don't switch sections during spin
+            if (isSpinning) return;
+            
+            document.querySelectorAll('.section').forEach(s => {
+                s.classList.remove('active');
+                s.style.display = 'none';
+            });
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            if (section === 'cases') {
+                document.getElementById('cases-section').style.display = 'block';
+                document.getElementById('jackpot-section').classList.remove('active');
+                document.getElementById('coinflip-section').classList.remove('active');
+                document.getElementById('inventory-section').style.display = 'none';
+                document.getElementById('codes-section').style.display = 'none';
+                document.getElementById('admin-section').style.display = 'none';
+            } else if (section === 'admin') {
+                document.getElementById('cases-section').style.display = 'none';
+                document.getElementById('admin-section').style.display = 'block';
+                document.getElementById('admin-section').classList.add('active');
+                document.getElementById('jackpot-section').classList.remove('active');
+                document.getElementById('jackpot-section').style.display = 'none';
+                document.getElementById('coinflip-section').classList.remove('active');
+                document.getElementById('coinflip-section').style.display = 'none';
+                document.getElementById('inventory-section').style.display = 'none';
+                document.getElementById('codes-section').style.display = 'none';
+            } else if (section === 'jackpot') {
+                document.getElementById('cases-section').style.display = 'none';
+                document.getElementById('jackpot-section').classList.add('active');
+                document.getElementById('jackpot-section').style.display = 'block';
+                document.getElementById('coinflip-section').classList.remove('active');
+                document.getElementById('coinflip-section').style.display = 'none';
+                document.getElementById('inventory-section').style.display = 'none';
+                document.getElementById('codes-section').style.display = 'none';
+                document.getElementById('admin-section').style.display = 'none';
+            } else if (section === 'coinflip') {
+                document.getElementById('cases-section').style.display = 'none';
+                document.getElementById('jackpot-section').classList.remove('active');
+                document.getElementById('jackpot-section').style.display = 'none';
+                document.getElementById('coinflip-section').classList.add('active');
+                document.getElementById('coinflip-section').style.display = 'block';
+                document.getElementById('inventory-section').style.display = 'none';
+                document.getElementById('codes-section').style.display = 'none';
+                document.getElementById('admin-section').style.display = 'none';
+            } else if (section === 'inventory') {
+                document.getElementById('cases-section').style.display = 'none';
+                document.getElementById('jackpot-section').classList.remove('active');
+                document.getElementById('jackpot-section').style.display = 'none';
+                document.getElementById('coinflip-section').classList.remove('active');
+                document.getElementById('coinflip-section').style.display = 'none';
+                document.getElementById('inventory-section').style.display = 'block';
+                document.getElementById('codes-section').style.display = 'none';
+                document.getElementById('admin-section').style.display = 'none';
+                updateInventory();
+            } else if (section === 'codes') {
+                document.getElementById('cases-section').style.display = 'none';
+                document.getElementById('jackpot-section').classList.remove('active');
+                document.getElementById('jackpot-section').style.display = 'none';
+                document.getElementById('coinflip-section').classList.remove('active');
+                document.getElementById('coinflip-section').style.display = 'none';
+                document.getElementById('inventory-section').style.display = 'none';
+                document.getElementById('codes-section').style.display = 'block';
+                document.getElementById('codes-section').classList.add('active');
+                document.getElementById('admin-section').style.display = 'none';
+            }
+            
+            event.target.classList.add('active');
+        }
+
+        function updateBalance() {
+            document.getElementById('balance').textContent = balance.toLocaleString();
+        }
+
+        function updateStats() {
+            document.getElementById('total-opened').textContent = totalOpened;
+            document.getElementById('best-item').textContent = bestItemValue > 0 ? `$${bestItemValue.toLocaleString()}` : '-';
+            document.getElementById('inventory-count').textContent = inventory.length;
+        }
+
+        function createConfetti() {
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                confetti.style.backgroundColor = ['#ff6b35', '#ffd700', '#ff0000', '#00ff00', '#0000ff'][Math.floor(Math.random() * 5)];
+                confetti.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                document.body.appendChild(confetti);
+                setTimeout(() => confetti.remove(), 4000);
+            }
+        }
+
+        // Handle Enter key in code input
+        document.addEventListener('DOMContentLoaded', function() {
+            const codeInput = document.getElementById('code-input');
+            if (codeInput) {
+                codeInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        submitCode();
+                    }
+                });
+            }
+        });
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
